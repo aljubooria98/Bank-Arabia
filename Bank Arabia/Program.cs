@@ -6,19 +6,19 @@ using Services.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Hämta och logga connection string
+// 📡 Connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 Console.WriteLine("🔌 Använder connection string: " + connectionString);
 
-// Lägg till DbContext med SQL Server
+// 🔧 Konfigurera DbContext med retry-policy
 builder.Services.AddDbContext<BankAppDataContext>(options =>
     options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure()));
 
-// Lägg till databasfelsidor för utvecklingsläge
+// 💥 Utvecklingsverktyg för migrationsfel
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// Konfigurera Identity med roller
+// 🔐 Identity-konfiguration
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
@@ -26,7 +26,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<BankAppDataContext>();
 
-// Razor Pages + tjänster
+// 📄 Razor + tjänster
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<StatisticsService>();
@@ -38,34 +38,46 @@ builder.Services.AddTransient<DataInitializer>();
 
 var app = builder.Build();
 
-// Migrering + seed
+// 🚀 Automatisk migrering & seed
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<BankAppDataContext>();
 
-    Console.WriteLine("📦 Kollar om databasen är relationell...");
-    if (dbContext.Database.IsRelational())
+    try
     {
-        Console.WriteLine("🚀 Startar migration...");
-        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
-        if (pendingMigrations.Any())
+        Console.WriteLine("📦 Kontrollerar databas...");
+        if (dbContext.Database.IsRelational())
         {
-            foreach (var migration in pendingMigrations)
-                Console.WriteLine($"📝 Migration som körs: {migration}");
+            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+            if (pendingMigrations.Any())
+            {
+                Console.WriteLine("🛠️ Migreringar som körs:");
+                foreach (var migration in pendingMigrations)
+                    Console.WriteLine($" - {migration}");
+
+                await dbContext.Database.MigrateAsync();
+            }
+            else
+            {
+                Console.WriteLine("✅ Inga nya migreringar behövs.");
+            }
         }
 
-        await dbContext.Database.MigrateAsync();
+        // 🌱 Seed Data – Idempotent (görs bara om det behövs)
+        Console.WriteLine("🌱 Kör SeedData...");
+        await DataInitializer.SeedDataAsync(services);
+        await BankDataSeeder.SeedBankDataAsync(dbContext);
+        await DataSeeder.SeedUsersAndRoles(services);
+        Console.WriteLine("✅ Seed klart!");
     }
-
-    Console.WriteLine("🌱 Startar seed...");
-    await DataInitializer.SeedDataAsync(services);
-    await BankDataSeeder.SeedBankDataAsync(dbContext);
-    await DataSeeder.SeedUsersAndRoles(services);
-    Console.WriteLine("✅ Seed klart!");
+    catch (Exception ex)
+    {
+        Console.WriteLine($"🚨 Fel under migration/seed: {ex.Message}");
+    }
 }
 
-// Miljöanpassad konfiguration
+// 🌍 Middleware & routing
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -76,7 +88,6 @@ else
     app.UseHsts();
 }
 
-// Middleware
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
