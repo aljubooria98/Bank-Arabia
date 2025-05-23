@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(BankAppDataContext))]
-    [Migration("20250523215100_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250523231213_InitialCleanCreate")]
+    partial class InitialCleanCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,7 +40,7 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateOnly>("Created")
                         .HasColumnType("date");
 
-                    b.Property<int>("CustomerId")
+                    b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Frequency")
@@ -567,13 +567,9 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("Account", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.Customer", "Customer")
+                    b.HasOne("DataAccessLayer.Models.Customer", null)
                         .WithMany("Accounts")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
+                        .HasForeignKey("CustomerId");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Models.Card", b =>

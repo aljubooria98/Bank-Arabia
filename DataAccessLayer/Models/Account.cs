@@ -7,8 +7,8 @@ public class Account
     public string Frequency { get; set; } = null!;
     public DateOnly Created { get; set; }
     public decimal Balance { get; set; }
-    public int CustomerId { get; set; }
-    public virtual Customer Customer { get; set; } = null!;
+    //public int CustomerId { get; set; }
+    //public virtual Customer Customer { get; set; } = null!;
 
     public virtual ICollection<Disposition> Dispositions { get; set; } = new List<Disposition>();
     public virtual ICollection<Loan> Loans { get; set; } = new List<Loan>();

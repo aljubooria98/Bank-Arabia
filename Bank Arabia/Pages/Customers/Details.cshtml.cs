@@ -34,7 +34,9 @@ namespace Bank_Arabia.Pages.Customers
             }
 
             var customer = await _context.Customers
-                .Include(c => c.Accounts)
+                .Include(c => c.Dispositions)
+                    .ThenInclude(d => d.Account)
+
                 .FirstOrDefaultAsync(c => c.CustomerId == Id);
 
             if (customer == null)

@@ -1,5 +1,4 @@
-﻿using Azure;
-using Bogus;
+﻿using Bogus;
 using DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -24,7 +23,6 @@ namespace DataAccessLayer.Seeds
                 .RuleFor(c => c.Emailaddress, f => f.Internet.Email())
                 .RuleFor(c => c.Telephonenumber, f => f.Phone.PhoneNumber())
                 .RuleFor(c => c.NationalId, f => f.Random.Replace("######-####"))
-                .RuleFor(c => c.Country, f => f.PickRandom(countries))
                 .RuleFor(c => c.Streetaddress, f => f.Address.StreetAddress())
                 .RuleFor(c => c.City, f => f.Address.City())
                 .RuleFor(c => c.Zipcode, f => f.Address.ZipCode())
@@ -36,63 +34,65 @@ namespace DataAccessLayer.Seeds
 
             var customers = new List<Customer>();
 
-            for (int i = 0; i < 200; i++)
+            foreach (var country in countries)
             {
-                var customer = customerFaker.Generate();
-
-                var accounts = new List<Account>();
-                var dispositions = new List<Disposition>();
-
-                for (int j = 0; j < 2; j++)
+                for (int i = 0; i < 20; i++) // 20 kunder per land × 10 länder = 200 kunder
                 {
-                    var account = new Account
+                    var customer = customerFaker.Generate();
+                    customer.Country = country;
+
+                    var accounts = new List<Account>();
+                    var dispositions = new List<Disposition>();
+
+                    for (int j = 0; j < 2; j++)
                     {
-                        Balance = 0,
-                        Frequency = "Monthly",
-                        Created = DateOnly.FromDateTime(DateTime.Now),
-                        Transactions = new List<Transaction>()
-                    };
-
-
-                    var transactionFaker = new Faker();
-                    decimal runningBalance = 0m;
-
-                    for (int k = 0; k < 50; k++)
-                    {
-                        var type = transactionFaker.PickRandom(transactionTypes) ?? "Deposit";
-                        var amount = transactionFaker.Finance.Amount(10, 2000);
-
-                        if (type == "Deposit")
-                            runningBalance += amount;
-                        else
-                            runningBalance -= amount;
-
-                        account.Balance = runningBalance; 
-
-                        account.Transactions.Add(new Transaction
+                        var account = new Account
                         {
-                            Amount = (type == "Deposit") ? amount : -amount,
-                            Date = DateOnly.FromDateTime(transactionFaker.Date.Past(1)),
-                            Type = type,        
-                            Operation = type,   
-                            Balance = runningBalance 
+                            Balance = 0,
+                            Frequency = "Monthly",
+                            Created = DateOnly.FromDateTime(DateTime.Now),
+                            Transactions = new List<Transaction>()
+                        };
+
+                        var transactionFaker = new Faker();
+                        decimal runningBalance = 0m;
+
+                        for (int k = 0; k < 50; k++)
+                        {
+                            var type = transactionFaker.PickRandom(transactionTypes) ?? "Deposit";
+                            var amount = transactionFaker.Finance.Amount(10, 2000);
+
+                            if (type == "Deposit")
+                                runningBalance += amount;
+                            else
+                                runningBalance -= amount;
+
+                            account.Balance = runningBalance;
+
+                            account.Transactions.Add(new Transaction
+                            {
+                                Amount = (type == "Deposit") ? amount : -amount,
+                                Date = DateOnly.FromDateTime(transactionFaker.Date.Past(1)),
+                                Type = type,
+                                Operation = type,
+                                Balance = runningBalance
+                            });
+                        }
+
+                        accounts.Add(account);
+
+                        dispositions.Add(new Disposition
+                        {
+                            Customer = customer,
+                            Account = account,
+                            Type = "Owner"
                         });
                     }
 
-
-                    accounts.Add(account);
-
-                    dispositions.Add(new Disposition
-                    {
-                        Customer = customer,
-                        Account = account,
-                        Type = "Owner"
-                    });
+                    customer.Accounts = accounts;
+                    customer.Dispositions = dispositions;
+                    customers.Add(customer);
                 }
-
-                customer.Accounts = accounts;
-                customer.Dispositions = dispositions;
-                customers.Add(customer);
             }
 
             await context.Customers.AddRangeAsync(customers);
