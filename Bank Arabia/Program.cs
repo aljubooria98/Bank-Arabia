@@ -1,37 +1,55 @@
 using DataAccessLayer.Models;
+using DataAccessLayer.Seeds;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Services.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<BankAppDataContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure()));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-    options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>() // Lägg till roller
-    .AddEntityFrameworkStores<BankAppDataContext>();
+{
+    options.SignIn.RequireConfirmedAccount = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<BankAppDataContext>();
 
 builder.Services.AddRazorPages();
 
-// Registrera DataInitializer
+builder.Services.AddScoped<StatisticsService>();
+builder.Services.AddScoped<CustomerService>();
+builder.Services.AddScoped<AccountService>();
+builder.Services.AddScoped<TransactionService>();
+
 builder.Services.AddTransient<DataInitializer>();
 
 var app = builder.Build();
 
-// ? Kör SeedData vid uppstart
 using (var scope = app.Services.CreateScope())
 {
-    var initializer = scope.ServiceProvider.GetRequiredService<DataInitializer>();
-    initializer.SeedData();
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<BankAppDataContext>();
+
+    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+    if (pendingMigrations.Any())
+    {
+        foreach (var migration in pendingMigrations)
+            Console.WriteLine(migration);
+    }
+
+    await dbContext.Database.MigrateAsync();
+    await DataInitializer.SeedDataAsync(services);
+    await BankDataSeeder.SeedBankDataAsync(dbContext);
+    await DataSeeder.SeedUsersAndRoles(services);
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -43,10 +61,11 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-app.MapRazorPages().WithStaticAssets();
+app.MapRazorPages();
 
 app.Run();

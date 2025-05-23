@@ -1,0 +1,54 @@
+﻿@page
+@model Bank_Arabia.Web.Pages.Customers.CreateModel
+@{
+    ViewData["Title"] = "Skapa ny kund";
+}
+
+<h2><i class="fas fa-user-plus me-2"></i>Skapa ny kund</h2>
+
+<form method="post" class="mt-4">
+    <div class="mb-3">
+        <label asp-for="Customer.Givenname" class="form-label">Förnamn</label>
+        <input asp-for="Customer.Givenname" class="form-control" />
+        <span asp-validation-for="Customer.Givenname" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Customer.Surname" class="form-label">Efternamn</label>
+        <input asp-for="Customer.Surname" class="form-control" />
+        <span asp-validation-for="Customer.Surname" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Customer.Country" class="form-label">Land</label>
+        <input asp-for="Customer.Country" class="form-control" />
+        <span asp-validation-for="Customer.Country" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Customer.Streetaddress" class="form-label">Adress</label>
+        <input asp-for="Customer.Streetaddress" class="form-control" />
+        <span asp-validation-for="Customer.Streetaddress" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Customer.Telephonecountrycode" class="form-label">Telefon landkod</label>
+        <input asp-for="Customer.Telephonecountrycode" class="form-control" />
+        <span asp-validation-for="Customer.Telephonecountrycode" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Customer.Telephonenumber" class="form-label">Telefonnummer</label>
+        <input asp-for="Customer.Telephonenumber" class="form-control" />
+        <span asp-validation-for="Customer.Telephonenumber" class="text-danger"></span>
+    </div>
+
+
+
+    <button type="submit" class="btn btn-success">Skapa</button>
+    <a asp-page="./Search" class="btn btn-secondary ms-2">Avbryt</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

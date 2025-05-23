@@ -1,0 +1,25 @@
+﻿@page
+@model Bank_Arabia.Pages.Admin.User.EditModel
+@{
+    ViewData["Title"] = "Redigera användarroll";
+}
+
+<h2>Redigera användarroll</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="Input.Role" class="form-label">Roll</label>
+        <select asp-for="Input.Role" class="form-control" asp-items="new SelectList(Model.Roles)">
+            <option disabled selected value="">-- Välj ny roll --</option>
+        </select>
+        <span asp-validation-for="Input.Role" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Spara ändringar</button>
+    <a asp-page="/Admin/Users/Index" class="btn btn-secondary">Avbryt</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

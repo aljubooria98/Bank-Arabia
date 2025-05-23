@@ -1,0 +1,55 @@
+﻿@page
+@model Bank_Arabia.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "Användarhantering";
+}
+
+<div class="container mt-4 text-light">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-users-cog me-2"></i>Användarhantering
+        </h2>
+        <a asp-page="/Admin/User/Create" class="btn btn-success">
+            <i class="fas fa-user-plus me-1"></i> Skapa användare
+        </a>
+    </div>
+
+    <p class="text-secondary">Här kan du skapa, redigera och ta bort användare samt hantera roller.</p>
+
+    <table class="table table-dark table-bordered table-hover shadow-sm">
+        <thead class="bg-dark text-light">
+            <tr>
+                <th><i class="fas fa-envelope"></i> E-post</th>
+                <th><i class="fas fa-user"></i> Användarnamn</th>
+                <th><i class="fas fa-user-tag"></i> Roll(er)</th>
+                <th><i class="fas fa-cogs"></i> Åtgärder</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.UserName</td>
+                    <td>
+                        @foreach (var role in user.Roles)
+                        {
+                            <span class="badge bg-primary me-1">@role</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-warning me-1">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@user.Id"
+                              class="d-inline" onsubmit="return confirm('Vill du ta bort användaren?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

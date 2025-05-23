@@ -32,6 +32,7 @@ public partial class Customer
     public string? Telephonenumber { get; set; }
 
     public string? Emailaddress { get; set; }
+    public ICollection<Account> Accounts { get; set; } = new List<Account>();
 
     public virtual ICollection<Disposition> Dispositions { get; set; } = new List<Disposition>();
 }

@@ -1,31 +1,209 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
+﻿/* ==== Bas ==== */
 body {
-  margin-bottom: 60px;
+    background-image: url('/Assets/img/BG.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: #000; /* Fallback */
+    color: #ffffff;
+    font-family: 'Nunito', sans-serif;
+    image-rendering: auto;
+    -webkit-backface-visibility: hidden;
+    -webkit-transform: translate3d(0,0,0);
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* ==== Allmän text ==== */
+* {
+    color: #ffffff !important;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* ==== Länkar ==== */
+a {
+    color: #4da3ff;
+}
+
+    a:hover {
+        color: #88c9ff;
+    }
+
+/* ==== Navigering ==== */
+.navbar {
+    background-color: #1c1c1c !important;
+}
+
+    .navbar a:hover {
+        color: #4da3ff !important;
+    }
+
+/* ==== Buttons ==== */
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
+    }
+
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+    .btn-success:hover {
+        background-color: #157347;
+        border-color: #146c43;
+    }
+
+.btn-outline-primary {
+    color: #4da3ff;
+    border-color: #4da3ff;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #4da3ff;
+        color: #000 !important;
+    }
+
+/* ==== Tabeller ==== */
+.table {
+    background-color: #1c1c1c;
+    border-color: #444;
+    color: #ffffff;
+}
+
+    .table thead,
+    .table thead th {
+        background-color: #2b2b2b ;
+        border-color: #444 ;
+        color: #ffffff ;
+    }
+
+    .table tbody tr {
+        background-color: #1f1f1f ;
+        color: #ffffff ;
+    }
+
+    .table tbody td {
+        background-color: #1f1f1f ;
+        color: #ffffff ;
+    }
+
+    .table tbody tr:hover {
+        background-color: #333 ;
+        color: #ffffff ;
+    }
+
+/* ==== Input Fields (Sökfält) ==== */
+input,
+select,
+textarea {
+    background-color: #000000; /* Svart bakgrund */
+    color: #000000 !important; /* Vit text */
+    border: 1px solid #444444;
+}
+
+    input::placeholder,
+    textarea::placeholder {
+        color: #bbbbbb ; /* Ljusgrå placeholder för kontrast */
+    }
+
+    input.input-validation-error {
+        border-color: #dc3545;
+    }
+
+.validation-summary-errors,
+.field-validation-error {
+    color: #000000;
+}
+
+/* ==== Pagination ==== */
+.pagination .page-link {
+    color: #000000; 
+    background-color: #000;
+    border-color: #cccccc;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #ffffff; 
+}
+
+/* ==== Footer ==== */
+.footer {
+    background-color: #1c1c1c;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 2rem;
+}
+
+/* ==== Box shadows, borders ==== */
+.box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .5);
+}
+
+.border-top {
+    border-top: 1px solid #444;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #444;
+}
+
+/* ==== Kundbild/Kort ==== */
+.card,
+.customer-details,
+.panel,
+.customer-box {
+    background-color: #1c1c1c !important;
+    border: 1px solid #444;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+/* ==== Transaktionstyper & ikoner ==== */
+.transaction {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.transaction-icon {
+    font-size: 1rem;
+}
+
+.transaction.deposit {
+    color: #00d084;
+}
+
+.transaction.withdrawal {
+    color: #ff6b6b;
+}
+
+.transaction.transfer {
+    color: #ffc107;
+}
+
+.transaction-interest {
+    color: #4da3ff;
+}
+
+.transaction-icon.deposit::before {
+    content: "⬆️";
+}
+
+.transaction-icon.withdrawal::before {
+    content: "⬇️";
+}
+
+.transaction-icon.transfer::before {
+    content: "🔁";
+}
+
+.transaction-icon.interest::before {
+    content: "💰";
 }

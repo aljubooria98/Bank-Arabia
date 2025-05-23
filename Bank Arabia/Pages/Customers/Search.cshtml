@@ -1,0 +1,105 @@
+﻿@page
+@model SearchModel
+@{
+    ViewData["Title"] = "Sök kund";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-users me-2"></i>Sök kund</h2>
+
+        @if (User.IsInRole("Admin") || User.IsInRole("Cashier"))
+        {
+            <a asp-page="./Create" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i>Skapa ny kund
+            </a>
+        }
+    </div>
+
+    <form method="get" class="row g-3 mb-4">
+        <input type="hidden" name="Page" value="1" />
+
+        <div class="col-md-4">
+            <input class="form-control" type="text" name="Name" placeholder="Namn" value="@Model.Name" />
+        </div>
+        <div class="col-md-4">
+            <input class="form-control" type="text" name="City" placeholder="Stad" value="@Model.City" />
+        </div>
+        <div class="col-md-4">
+            <input class="form-control" type="number" name="CustomerId" placeholder="Kundnummer" value="@(Model.CustomerId ?? null)" />
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-1"></i>Sök
+            </button>
+        </div>
+    </form>
+
+    @if (Model.Results.Any())
+    {
+        <h3 class="mb-3">Resultat</h3>
+        <table class="table table-hover table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Kundnummer</th>
+                    <th>Namn</th>
+                    <th>Adress</th>
+                    <th>Stad</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model.Results)
+                {
+                    <tr>
+                        <td>@customer.CustomerId</td>
+                        <td>@($"{customer.Givenname} {customer.Surname}")</td>
+                        <td>@customer.Streetaddress</td>
+                        <td>@customer.City</td>
+                        <td>
+                            <a asp-page="Details" asp-route-id="@customer.CustomerId" class="btn btn-sm btn-outline-secondary me-1" title="Visa">
+                                📄
+                            </a>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Cashier"))
+                            {
+                                <a asp-page="Edit" asp-route-id="@customer.CustomerId" class="btn btn-sm btn-outline-warning me-1" title="Redigera">
+                                    ✏️
+                                </a>
+                                <a asp-page="Delete" asp-route-id="@customer.CustomerId" class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Är du säker på att du vill ta bort kunden?');" title="Radera">
+                                    🗑
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center">
+                @{
+                    var startPage = Math.Max(1, Model.Page - 2);
+                    var endPage = Math.Min(Model.TotalPages, Model.Page + 2);
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(Model.Page == i ? "active" : "")">
+                        <a class="page-link"
+                           asp-page="Search"
+                           asp-route-Name="@Model.Name"
+                           asp-route-City="@Model.City"
+                           asp-route-p="@i">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+    else
+    {
+        <div class="alert alert-info">Inga kunder hittades.</div>
+    }
+</div>

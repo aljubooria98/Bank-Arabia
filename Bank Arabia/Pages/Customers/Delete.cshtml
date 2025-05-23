@@ -1,0 +1,25 @@
+﻿@page "{id:int}"
+@model Bank_Arabia.Web.Pages.Customers.DeleteModel
+@{
+    ViewData["Title"] = "Ta bort kund";
+}
+
+<h2>Ta bort kund</h2>
+
+@if (Model.Customer != null)
+{
+    <div class="alert alert-warning">
+        <p>Är du säker på att du vill ta bort kunden <strong>@Model.Customer.Givenname @Model.Customer.Surname</strong> från <strong>@Model.Customer.Country</strong>?</p>
+    </div>
+
+    <form method="post">
+        <input type="hidden" asp-for="Customer.CustomerId" />
+
+        <button type="submit" class="btn btn-danger">🗑 Ja, ta bort</button>
+        <a asp-page="./Search" class="btn btn-secondary">Avbryt</a>
+    </form>
+}
+else
+{
+    <div class="alert alert-danger">Kunden kunde inte hittas.</div>
+}

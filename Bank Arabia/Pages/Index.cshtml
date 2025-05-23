@@ -1,10 +1,53 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Startsida";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Antal kunder</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.Stats.CustomerCount</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Antal konton</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.Stats.AccountCount</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-header">Antal länder</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.Stats.BalancePerCountry.Count</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <h4 class="mt-4">Saldo per land</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Land</th>
+                <th>Totalt saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var kvp in Model.Stats.BalancePerCountry)
+            {
+                <tr>
+                    <td>@kvp.Key</td>
+                    <td>@kvp.Value.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

@@ -23,7 +23,7 @@ namespace DataAccessLayer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DataAccessLayer.Models.Account", b =>
+            modelBuilder.Entity("Account", b =>
                 {
                     b.Property<int>("AccountId")
                         .ValueGeneratedOnAdd()
@@ -37,6 +37,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateOnly>("Created")
                         .HasColumnType("date");
 
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Frequency")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -44,6 +47,8 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("AccountId")
                         .HasName("PK_account");
+
+                    b.HasIndex("CustomerId");
 
                     b.ToTable("Accounts");
                 });
@@ -557,6 +562,17 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Account", b =>
+                {
+                    b.HasOne("DataAccessLayer.Models.Customer", "Customer")
+                        .WithMany("Accounts")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("DataAccessLayer.Models.Card", b =>
                 {
                     b.HasOne("DataAccessLayer.Models.Disposition", "Disposition")
@@ -570,7 +586,7 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Models.Disposition", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.Account", "Account")
+                    b.HasOne("Account", "Account")
                         .WithMany("Dispositions")
                         .HasForeignKey("AccountId")
                         .IsRequired()
@@ -589,7 +605,7 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Models.Loan", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.Account", "Account")
+                    b.HasOne("Account", "Account")
                         .WithMany("Loans")
                         .HasForeignKey("AccountId")
                         .IsRequired()
@@ -600,7 +616,7 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Models.PermenentOrder", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.Account", "Account")
+                    b.HasOne("Account", "Account")
                         .WithMany("PermenentOrders")
                         .HasForeignKey("AccountId")
                         .IsRequired()
@@ -611,7 +627,7 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Models.Transaction", b =>
                 {
-                    b.HasOne("DataAccessLayer.Models.Account", "AccountNavigation")
+                    b.HasOne("Account", "AccountNavigation")
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .IsRequired()
@@ -671,7 +687,7 @@ namespace DataAccessLayer.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Models.Account", b =>
+            modelBuilder.Entity("Account", b =>
                 {
                     b.Navigation("Dispositions");
 
@@ -684,6 +700,8 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Models.Customer", b =>
                 {
+                    b.Navigation("Accounts");
+
                     b.Navigation("Dispositions");
                 });
 

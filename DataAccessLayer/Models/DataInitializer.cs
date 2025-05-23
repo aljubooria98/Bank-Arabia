@@ -1,59 +1,56 @@
 ﻿using DataAccessLayer.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Threading.Tasks;
 
 public class DataInitializer
 {
-    private readonly BankAppDataContext _dbContext;
-    private readonly UserManager<IdentityUser> _userManager;
+    public static async Task SeedDataAsync(IServiceProvider serviceProvider)
+    {
+        var dbContext = serviceProvider.GetRequiredService<BankAppDataContext>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    public DataInitializer(BankAppDataContext dbContext, UserManager<IdentityUser> userManager)
-    {
-        _dbContext = dbContext;
-        _userManager = userManager;
-    }
-    public void SeedData()
-    {
-        _dbContext.Database.Migrate();
-        SeedRoles();
-        SeedUsers();
-    }
+        await dbContext.Database.MigrateAsync();
 
-    // Här finns möjlighet att uppdatera dina användares loginuppgifter
-    private void SeedUsers()
-    {
-        AddUserIfNotExists("richard.chalk@systementor.se", "Hejsan123#", new string[] { "Admin" });
-        AddUserIfNotExists("richard.chalk@customer.systementor.se", "Hejsan123#", new string[] { "Cashier" });
-    }
-
-    // Här finns möjlighet att uppdatera dina användares roller
-    private void SeedRoles()
-    {
-        AddRoleIfNotExisting("Admin");
-        AddRoleIfNotExisting("Cashier");
-    }
-
-    private void AddRoleIfNotExisting(string roleName)
-    {
-        var role = _dbContext.Roles.FirstOrDefault(r => r.Name == roleName);
-        if (role == null)
+        // Skapa rollerna om de inte finns
+        string[] roles = { "Admin", "Cashier" };
+        foreach (var role in roles)
         {
-            _dbContext.Roles.Add(new IdentityRole { Name = roleName, NormalizedName = roleName });
-            _dbContext.SaveChanges();
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
         }
+
+        // Skapa användare
+        await CreateUserAsync(userManager, "richard.chalk@systementor.se", "Hejsan123#", "Admin");
+        await CreateUserAsync(userManager, "richard.chalk@customer.systementor.se", "Hejsan123#", "Cashier");
     }
 
-    private void AddUserIfNotExists(string userName, string password, string[] roles)
+    private static async Task CreateUserAsync(UserManager<IdentityUser> userManager, string email, string password, string role)
     {
-        if (_userManager.FindByEmailAsync(userName).Result != null) return;
-
-        var user = new IdentityUser
+        var user = await userManager.FindByEmailAsync(email);
+        if (user == null)
         {
-            UserName = userName,
-            Email = userName,
-            EmailConfirmed = true
-        };
-        _userManager.CreateAsync(user, password).Wait();
-        _userManager.AddToRolesAsync(user, roles).Wait();
+            user = new IdentityUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(user, password);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, role);
+            }
+            else
+            {
+                throw new Exception($"Kunde inte skapa användaren {email}: {string.Join(", ", result.Errors)}");
+            }
+        }
     }
 }

@@ -1,20 +1,21 @@
-using Microsoft.AspNetCore.Mvc;
+using Services.ViewModels;
+using DataAccessLayer.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Services.Services;
 
-namespace Bank_Arabia.Pages
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly StatisticsService _statisticsService;
+
+    public IndexModel(StatisticsService statisticsService)
     {
-        private readonly ILogger<IndexModel> _logger;
+        _statisticsService = statisticsService;
+    }
 
-        public IndexModel(ILogger<IndexModel> logger)
-        {
-            _logger = logger;
-        }
+    public StatisticsViewModel Stats { get; set; } = new();
 
-        public void OnGet()
-        {
-
-        }
+    public async Task OnGetAsync()
+    {
+        Stats = await _statisticsService.GetStatisticsAsync();
     }
 }

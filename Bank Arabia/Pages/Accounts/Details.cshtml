@@ -1,0 +1,104 @@
+﻿@page
+@model Bank_Arabia.Pages.Accounts.DetailsModel
+@{
+    ViewData["Title"] = "Kontobild";
+}
+
+<div class="container mt-5">
+    <h2>Konto @Model.Account!.AccountId</h2>
+    <p>
+        <strong>Saldo:</strong>
+        <span class="fw-bold @(Model.Account.Balance >= 0 ? "text-success" : "text-danger")">
+            @Model.Account.Balance.ToString("C")
+        </span>
+    </p>
+
+    <div class="mb-4">
+        <a asp-page="/Accounts/Transaction" class="btn btn-success">
+            <i class="fas fa-plus-circle me-1"></i> Ny transaktion
+        </a>
+    </div>
+
+    <h4>Transaktioner</h4>
+
+    <table class="table" id="transactionTable">
+        <thead class="table-light">
+            <tr>
+                <th>Datum</th>
+                <th>Belopp</th>
+                <th>Typ</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in Model.Account.Transactions)
+            {
+                <tr>
+                    <td>@t.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td class="fw-semibold @(t.Amount < 0 ? "text-danger" : "text-success")">
+                        @t.Amount.ToString("C")
+                    </td>
+                    <td>
+                        @if (t.Operation == "Deposit")
+                        {
+                            <span class="text-success"><i class="fas fa-arrow-down me-1"></i>Insättning</span>
+                        }
+                        else if (t.Operation == "Withdraw")
+                        {
+                            <span class="text-danger"><i class="fas fa-arrow-up me-1"></i>Uttag</span>
+                        }
+                        else if (t.Operation == "Transfer")
+                        {
+                            <span class="text-warning"><i class="fas fa-right-left me-1"></i>Överföring</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">@t.Operation</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button id="loadMoreBtn" class="btn btn-outline-primary" data-skip="20" data-account="@Model.Account.AccountId">
+        Visa fler
+    </button>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("loadMoreBtn").addEventListener("click", async function () {
+            const btn = this;
+            const skip = parseInt(btn.getAttribute("data-skip"));
+            const accountId = btn.getAttribute("data-account");
+
+            const response = await fetch(`/api/accounts/${accountId}/transactions?skip=${skip}&take=20`);
+            const data = await response.json();
+
+            const tbody = document.querySelector("#transactionTable tbody");
+
+            data.forEach(t => {
+                const typeIcon = t.type === "Deposit" ? "fas fa-arrow-down text-success"
+                                : t.type === "Withdraw" ? "fas fa-arrow-up text-danger"
+                                : t.type === "Transfer" ? "fas fa-right-left text-warning"
+                                : "fas fa-question-circle text-muted";
+
+                const typeLabel = t.type === "Deposit" ? "Insättning"
+                                : t.type === "Withdraw" ? "Uttag"
+                                : t.type === "Transfer" ? "Överföring"
+                                : t.type;
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${t.date}</td>
+                    <td class="${t.amount < 0 ? 'text-danger' : 'text-success'} fw-semibold">${t.amount}</td>
+                    <td><i class="${typeIcon} me-1"></i>${typeLabel}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            btn.setAttribute("data-skip", skip + 20);
+        });
+    </script>
+}
+

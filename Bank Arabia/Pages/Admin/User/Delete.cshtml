@@ -1,0 +1,23 @@
+﻿@page
+@model Bank_Arabia.Pages.Admin.User.DeleteModel
+@{
+    ViewData["Title"] = "Ta bort användare";
+}
+
+<h2>Ta bort användare</h2>
+
+@if (Model.UserToDelete != null)
+{
+    <div class="alert alert-warning">
+        <p>Är du säker på att du vill ta bort användaren <strong>@Model.UserToDelete.Email</strong>?</p>
+        <form method="post">
+            <button type="submit" class="btn btn-danger">🗑 Ja, ta bort</button>
+            <a asp-page="/Admin/Users/Index" class="btn btn-secondary">Avbryt</a>
+        </form>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">Användare hittades inte.</div>
+}
+
