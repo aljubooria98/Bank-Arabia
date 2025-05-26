@@ -7,27 +7,26 @@ namespace Services.ViewModels
     public class CustomerDetailsViewModel
     {
         public int CustomerId { get; set; }
-        public string Gender { get; set; } = string.Empty;
-        public string Givenname { get; set; } = string.Empty;
-        public string Surname { get; set; } = string.Empty;
-        public string Streetaddress { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Zipcode { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-        public string CountryCode { get; set; } = string.Empty;
-        public DateOnly? Birthday { get; set; }
-        public string? NationalId { get; set; }
-        public string? Telephonecountrycode { get; set; }
-        public string? Telephonenumber { get; set; }
-        public string? Emailaddress { get; set; }
 
-        public List<AccountDetailsViewModel> Accounts { get; set; } = new();
+        public string Name { get; set; } = string.Empty;
+
+        public string Country { get; set; } = string.Empty;
+
+        public string Address { get; set; } = string.Empty;
+
+        public string Phone { get; set; } = string.Empty;
+
+        public List<AccountViewModel> Accounts { get; set; } = new();
 
         public decimal TotalBalance => Accounts.Sum(a => a.Balance);
+    }
 
-        public string Address => $"{Streetaddress}, {City}, {Zipcode}";
-        public string Phone => $"{Telephonecountrycode} {Telephonenumber}".Trim();
+    public class AccountViewModel
+    {
+        public int AccountId { get; set; }
 
-        public string Name => $"{Givenname} {Surname}";
+        public decimal Balance { get; set; }
+
+        public List<TransactionViewModel> Transactions { get; set; } = new();
     }
 }

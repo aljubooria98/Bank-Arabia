@@ -1,5 +1,6 @@
-﻿using DataAccessLayer.Models;
+﻿using DataAccessLayer.Data;
 using Microsoft.EntityFrameworkCore;
+using TransactionModel = DataAccessLayer.Models.Transaction;
 
 namespace Services.Services;
 
@@ -12,18 +13,8 @@ public class TransactionService
         _context = context;
     }
 
-    public enum TransactionType
-    {
-        Withdraw,
-        Deposit,
-        Transfer
-    }
-
     public async Task<string?> PerformTransactionAsync(int fromId, int? toId, decimal amount, string type)
     {
-        if (!Enum.TryParse<TransactionType>(type, out var transactionType))
-            return "❌ Ogiltig transaktionstyp.";
-
         if (amount <= 0)
             return "❌ Beloppet måste vara större än 0.";
 
@@ -34,38 +25,41 @@ public class TransactionService
         if (fromAccount == null)
             return "❌ Från-kontot kunde inte hittas.";
 
-        if ((transactionType == TransactionType.Withdraw || transactionType == TransactionType.Transfer) && fromAccount.Balance < amount)
-            return "❌ Otillräckligt saldo på från-kontot.";
-
-        var now = DateTime.Now;
-
-        switch (transactionType)
+        if (type == "Withdraw" || type == "Transfer")
         {
-            case TransactionType.Withdraw:
+            if (fromAccount.Balance < amount)
+                return "❌ Otillräckligt saldo på från-kontot.";
+        }
+
+        switch (type)
+        {
+            case "Withdraw":
                 fromAccount.Balance -= amount;
-                fromAccount.Transactions.Add(new Transaction
+                fromAccount.Transactions.Add(new TransactionModel
                 {
                     Amount = -amount,
-                    Date = DateOnly.FromDateTime(now),
-                    Type = nameof(TransactionType.Withdraw),
+                    Date = DateOnly.FromDateTime(DateTime.Today),
+                    Type = "Withdraw",
                     AccountId = fromId,
+                    Operation = "",
                     Balance = fromAccount.Balance
                 });
                 break;
 
-            case TransactionType.Deposit:
+            case "Deposit":
                 fromAccount.Balance += amount;
-                fromAccount.Transactions.Add(new Transaction
+                fromAccount.Transactions.Add(new TransactionModel
                 {
                     Amount = amount,
-                    Date = DateOnly.FromDateTime(now),
-                    Type = nameof(TransactionType.Deposit),
+                    Date = DateOnly.FromDateTime(DateTime.Today),
+                    Type = "Deposit",
                     AccountId = fromId,
+                    Operation = "",
                     Balance = fromAccount.Balance
                 });
                 break;
 
-            case TransactionType.Transfer:
+            case "Transfer":
                 if (!toId.HasValue)
                     return "❌ Till-konto måste anges vid överföring.";
 
@@ -79,26 +73,29 @@ public class TransactionService
                 fromAccount.Balance -= amount;
                 toAccount.Balance += amount;
 
-                fromAccount.Transactions.Add(new Transaction
+                fromAccount.Transactions.Add(new TransactionModel
                 {
                     Amount = -amount,
-                    Date = DateOnly.FromDateTime(now),
-                    Type = nameof(TransactionType.Transfer),
+                    Date = DateOnly.FromDateTime(DateTime.Today),
+                    Type = "Transfer",
                     AccountId = fromId,
-                    Balance = fromAccount.Balance,
-                    Bank = "INTERNAL"
+                    Operation = "",
+                    Balance = fromAccount.Balance
                 });
 
-                toAccount.Transactions.Add(new Transaction
+                toAccount.Transactions.Add(new TransactionModel
                 {
                     Amount = amount,
-                    Date = DateOnly.FromDateTime(now),
-                    Type = nameof(TransactionType.Transfer),
+                    Date = DateOnly.FromDateTime(DateTime.Today),
+                    Type = "Transfer",
                     AccountId = toId.Value,
-                    Balance = toAccount.Balance,
-                    Bank = "INTERNAL"
+                    Operation = "",
+                    Balance = toAccount.Balance
                 });
                 break;
+
+            default:
+                return "❌ Ogiltig transaktionstyp.";
         }
 
         await _context.SaveChangesAsync();

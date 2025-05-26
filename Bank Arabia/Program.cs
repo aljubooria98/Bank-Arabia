@@ -1,83 +1,96 @@
-﻿using DataAccessLayer.Models;
-using DataAccessLayer.Seeds;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using DataAccessLayer.Data;
+using DataAccessLayer.Seeds;
 using Services.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 📡 Connection string
+// 🔌 Anslutningssträng
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-Console.WriteLine("🔌 Använder connection string: " + connectionString);
 
-// 🔧 Konfigurera DbContext med retry-policy
+// 📦 Registrera DbContexts
 builder.Services.AddDbContext<BankAppDataContext>(options =>
-    options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure()));
+    options.UseSqlServer(connectionString));
 
-// 💥 Utvecklingsverktyg för migrationsfel
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
-// 🔐 Identity-konfiguration
+// 👥 Identity + roller
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
 })
 .AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<BankAppDataContext>();
+.AddEntityFrameworkStores<ApplicationDbContext>();
 
-// 📄 Razor + tjänster
-builder.Services.AddRazorPages();
-
+// 🧩 Tjänster
 builder.Services.AddScoped<StatisticsService>();
 builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<TransactionService>();
 
-builder.Services.AddTransient<DataInitializer>();
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddRazorPages();
+builder.Services.AddControllers(); // API-stöd
 
 var app = builder.Build();
 
-// 🚀 Automatisk migrering & seed
+// 🚀 Automatiska migreringar och seeders
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var dbContext = services.GetRequiredService<BankAppDataContext>();
 
     try
     {
-        Console.WriteLine("📦 Kontrollerar databas...");
-        if (dbContext.Database.IsRelational())
-        {
-            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
-            if (pendingMigrations.Any())
-            {
-                Console.WriteLine("🛠️ Migreringar som körs:");
-                foreach (var migration in pendingMigrations)
-                    Console.WriteLine($" - {migration}");
+        var identityDb = services.GetRequiredService<ApplicationDbContext>();
+        var bankDb = services.GetRequiredService<BankAppDataContext>();
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
 
-                await dbContext.Database.MigrateAsync();
-            }
-            else
-            {
-                Console.WriteLine("✅ Inga nya migreringar behövs.");
-            }
+        // 🛠 Kör migreringar om databasen inte redan är uppdaterad
+        try
+        {
+            await identityDb.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "⚠️ IdentityDbContext: Troligen finns tabellerna redan.");
         }
 
-        // 🌱 Seed Data – Idempotent (görs bara om det behövs)
-        Console.WriteLine("🌱 Kör SeedData...");
-        await DataInitializer.SeedDataAsync(services);
-        await BankDataSeeder.SeedBankDataAsync(dbContext);
-        await DataSeeder.SeedUsersAndRoles(services);
-        Console.WriteLine("✅ Seed klart!");
+        try
+        {
+            await bankDb.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "⚠️ BankAppDataContext: Troligen finns tabellerna redan.");
+        }
+
+        // 🌱 Seed endast om data saknas
+        if (!await identityDb.Roles.AnyAsync())
+        {
+            logger.LogInformation("🌱 Seedar användare och roller...");
+            await DataSeeder.SeedUsersAndRoles(services);
+        }
+
+        if (!await bankDb.Customers.AnyAsync())
+        {
+            logger.LogInformation("🌱 Seedar bankdata...");
+            await BankDataSeeder.SeedBankDataAsync(bankDb);
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"🚨 Fel under migration/seed: {ex.Message}");
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "❌ Allvarligt fel vid migrering/seed.");
+        throw;
     }
 }
 
-// 🌍 Middleware & routing
+// 🌐 Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -91,10 +104,9 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapRazorPages();
+app.MapControllers(); // API-endpoints
 
 app.Run();

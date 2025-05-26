@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Models;
 
 public partial class PermenentOrder
 {
+    [Key]
     public int OrderId { get; set; }
 
     public int AccountId { get; set; }

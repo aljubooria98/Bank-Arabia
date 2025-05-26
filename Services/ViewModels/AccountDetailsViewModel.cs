@@ -7,11 +7,12 @@ namespace Services.ViewModels
     {
         public int AccountId { get; set; }
         public decimal Balance { get; set; }
-
-        public string AccountType { get; set; } = string.Empty; 
-        public DateOnly? Created { get; set; } 
         public List<TransactionViewModel> Transactions { get; set; } = new();
 
-        public int TransactionCount => Transactions?.Count ?? 0;
+        public int Page { get; set; }
+        public int TotalPages { get; set; }
+
+        public bool HasPreviousPage => Page > 1;
+        public bool HasNextPage => Page < TotalPages;
     }
 }
