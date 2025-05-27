@@ -60,7 +60,7 @@
         </tbody>
     </table>
 
-    <button id="loadMoreBtn" class="btn btn-outline-primary" data-skip="20" data-account="@Model.Account.AccountId">
+    <button id="loadMoreBtn" class="btn btn-outline-primary" data-skip="10" data-account="@Model.Account.AccountId">
         Visa fler
     </button>
 </div>
@@ -72,7 +72,7 @@
             const skip = parseInt(btn.getAttribute("data-skip"));
             const accountId = btn.getAttribute("data-account");
 
-            const response = await fetch(`/api/accounts/${accountId}/transactions?skip=${skip}&take=20`);
+            const response = await fetch(`/api/accounts/${accountId}/transactions?skip=${skip}&take=10`);
             const data = await response.json();
 
             const tbody = document.querySelector("#transactionTable tbody");
@@ -97,7 +97,7 @@
                 tbody.appendChild(row);
             });
 
-            btn.setAttribute("data-skip", skip + 20);
+            btn.setAttribute("data-skip", skip + 10);
         });
     </script>
 }

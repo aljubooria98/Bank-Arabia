@@ -17,7 +17,6 @@ namespace Services.Services;
 
     public async Task<AccountDetailsViewModel?> GetAccountDetailsAsync(int accountId, int page = 1, int pageSize = 10)
     {
-        // Säkerställ att page inte blir mindre än 1
         if (page < 1) page = 1;
 
         var account = await _context.Accounts
@@ -26,9 +25,6 @@ namespace Services.Services;
 
         if (account == null)
             return null;
-
-        // ... resten som tidigare
-
 
         var totalTransactions = await _context.Transactions
             .CountAsync(t => t.AccountId == accountId);
@@ -59,7 +55,7 @@ namespace Services.Services;
         };
     }
 
-    public async Task<List<TransactionViewModel>> GetTransactionsAsync(int accountId, int page = 1, int pageSize = 20)
+    public async Task<List<TransactionViewModel>> GetTransactionsAsync(int accountId, int page = 1, int pageSize = 10)
     {
         return await _context.Transactions
             .Where(t => t.AccountId == accountId)
