@@ -1,6 +1,3 @@
-"VIKTIG"---"VIKTIG"---"VIKTIG"---"VIKTIG"---"VIKTIG"---"VIKTIG"---"VIKTIG"---"VIKTIG"---"VIKTIG"
-("visa fler" knappen i Detailes/Transaktioner vy är där jag hade problem och funkar ändast på vissa kunder som ex kund 2 men inte kund 1) "Snälla berätta om du ser felet"
-
 Man kan trycka på söka kund via admin eller cashier sidan för att se kundlistan och där ifrån kan man trycka på en av de tre ikonerna till höger för att komma till olika sidor gällande den kund.
 
 I en av de så kan man trycka på se konto för att där ifrån kunna göra en transaktion och se över alla transaktioner gällande den valda konton 
